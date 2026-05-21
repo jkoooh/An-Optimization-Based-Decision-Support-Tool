@@ -1,4 +1,4 @@
-"""Routing utilities for ports and sea-route caches."""
+"""Routing code for ports and sea-route caches."""
 
 import pickle
 import webbrowser
