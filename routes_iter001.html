@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_0696821607249a755cc6ad930dd80734 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    
+                    <style>
+                        .foliumtooltip {
+                            
+                        }
+                       .foliumtooltip table{
+                            margin: auto;
+                        }
+                        .foliumtooltip tr{
+                            text-align: left;
+                        }
+                        .foliumtooltip th{
+                            padding: 2px; padding-right: 8px;
+                        }
+                    </style>
+            
+    
+                    <style>
+                        .foliumtooltip {
+                            
+                        }
+                       .foliumtooltip table{
+                            margin: auto;
+                        }
+                        .foliumtooltip tr{
+                            text-align: left;
+                        }
+                        .foliumtooltip th{
+                            padding: 2px; padding-right: 8px;
+                        }
+                    </style>
+            
+</head>
+<body>
+    
+    
+    <div style="
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        z-index: 9999;
+        background: white;
+        padding: 10px 12px;
+        border: 1px solid #999;
+        border-radius: 4px;
+        font-size: 12px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        max-height: 320px;
+        overflow-y: auto;
+        overflow-x: auto;
+        white-space: nowrap;
+    ">
+      <div style="font-weight: 600; margin-bottom: 6px;">Legs</div>
+      <div style='margin-bottom:6px;'><div><svg width='20' height='3' style='margin-right: 5px; vertical-align:middle;'><line x1='0' y1='1.5' x2='20' y2='1.5' stroke='black' stroke-dasharray='5, 5'/></svg>Leg 0: PAK-IND / Ballasting / -</div></div><div style='margin-bottom:6px;'><div><svg width='20' height='3' style='margin-right: 5px; vertical-align:middle;'><line x1='0' y1='1.5' x2='20' y2='1.5' stroke='red' stroke-dasharray=''/></svg>Leg 1: IND-GBR / Petroleum products / 82000 t</div></div>
+    </div>
+    
+    
+            <div class="folium-map" id="map_0696821607249a755cc6ad930dd80734" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_0696821607249a755cc6ad930dd80734 = L.map(
+                "map_0696821607249a755cc6ad930dd80734",
+                {
+                    center: [0.0, 0.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 2,
+  "zoomControl": true,
+  "preferCanvas": false,
+  "zoomSnap": 0.01,
+  "zoomDelta": 0.1,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_292f429b222e225c670b8729a8abf26b = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_292f429b222e225c670b8729a8abf26b.addTo(map_0696821607249a755cc6ad930dd80734);
+        
+    
+        function geo_json_67c2affa1be5ccd949cc906c369b56e8_styler(feature) {
+            switch(feature.properties.color) {
+                default:
+                    return {"color": "black", "dashArray": "5, 5", "opacity": 0.95, "weight": 1};
+            }
+        }
+        function geo_json_67c2affa1be5ccd949cc906c369b56e8_highlighter(feature) {
+            switch(feature.properties.color) {
+                default:
+                    return {"color": "black", "dashArray": "5, 5", "opacity": 0.95, "weight": 4};
+            }
+        }
+
+        function geo_json_67c2affa1be5ccd949cc906c369b56e8_onEachFeature(feature, layer) {
+
+            layer.on({
+                mouseout: function(e) {
+                    if(typeof e.target.setStyle === "function"){
+                            geo_json_67c2affa1be5ccd949cc906c369b56e8.resetStyle(e.target);
+                    }
+                },
+                mouseover: function(e) {
+                    if(typeof e.target.setStyle === "function"){
+                        const highlightStyle = geo_json_67c2affa1be5ccd949cc906c369b56e8_highlighter(e.target.feature)
+                        e.target.setStyle(highlightStyle);
+                    }
+                },
+            });
+        };
+        var geo_json_67c2affa1be5ccd949cc906c369b56e8 = L.geoJson(null, {
+                onEachFeature: geo_json_67c2affa1be5ccd949cc906c369b56e8_onEachFeature,
+            
+                style: geo_json_67c2affa1be5ccd949cc906c369b56e8_styler,
+            ...{
+}
+        });
+
+        function geo_json_67c2affa1be5ccd949cc906c369b56e8_add (data) {
+            geo_json_67c2affa1be5ccd949cc906c369b56e8
+                .addData(data);
+        }
+            geo_json_67c2affa1be5ccd949cc906c369b56e8_add({"features": [{"geometry": {"coordinates": [[66.93449468137152, 24.842164612938934], [66.55986110544029, 24.274189836509045], [68.68135027526313, 22.515120927612713], [69.55547810943409, 20.780531933567207], [70.98869383361918, 19.956350149253314], [72.00587150071664, 20.220892442289188]], "type": "LineString"}, "properties": {"color": "black", "detail_line": "Leg 0: PAK-IND / Ballasting / -", "is_ballast": true}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+    geo_json_67c2affa1be5ccd949cc906c369b56e8.bindTooltip(
+    function(layer){
+    let div = L.DomUtil.create('div');
+    
+    let handleObject = feature => {
+        if (feature === null) {
+            return '';
+        } else if (typeof(feature)=='object') {
+            return JSON.stringify(feature);
+        } else {
+            return feature;
+        }
+    }
+    let fields = ["detail_line"];
+    let aliases = ["detail_line"];
+    let table = '<table>' +
+        String(
+        fields.map(
+        (v,i)=>
+        `<tr>
+            <td>${handleObject(layer.feature.properties[v]).toLocaleString()}</td>
+        </tr>`).join(''))
+    +'</table>';
+    div.innerHTML=table;
+    
+    return div
+    }
+    ,{
+  "sticky": false,
+  "className": "foliumtooltip",
+});
+                     
+    
+            geo_json_67c2affa1be5ccd949cc906c369b56e8.addTo(map_0696821607249a755cc6ad930dd80734);
+        
+    
+        function geo_json_6030751da865326668655b729c653e8f_styler(feature) {
+            switch(feature.properties.color) {
+                default:
+                    return {"color": "red", "dashArray": null, "opacity": 0.95, "weight": 1};
+            }
+        }
+        function geo_json_6030751da865326668655b729c653e8f_highlighter(feature) {
+            switch(feature.properties.color) {
+                default:
+                    return {"color": "red", "dashArray": null, "opacity": 0.95, "weight": 4};
+            }
+        }
+
+        function geo_json_6030751da865326668655b729c653e8f_onEachFeature(feature, layer) {
+
+            layer.on({
+                mouseout: function(e) {
+                    if(typeof e.target.setStyle === "function"){
+                            geo_json_6030751da865326668655b729c653e8f.resetStyle(e.target);
+                    }
+                },
+                mouseover: function(e) {
+                    if(typeof e.target.setStyle === "function"){
+                        const highlightStyle = geo_json_6030751da865326668655b729c653e8f_highlighter(e.target.feature)
+                        e.target.setStyle(highlightStyle);
+                    }
+                },
+            });
+        };
+        var geo_json_6030751da865326668655b729c653e8f = L.geoJson(null, {
+                onEachFeature: geo_json_6030751da865326668655b729c653e8f_onEachFeature,
+            
+                style: geo_json_6030751da865326668655b729c653e8f_styler,
+            ...{
+}
+        });
+
+        function geo_json_6030751da865326668655b729c653e8f_add (data) {
+            geo_json_6030751da865326668655b729c653e8f
+                .addData(data);
+        }
+            geo_json_6030751da865326668655b729c653e8f_add({"features": [{"geometry": {"coordinates": [[0.5018921748254002, 51.54450575054911], [0.8109324875688628, 51.54770072915126], [1.2563880482663023, 51.644739063746265], [1.5446572317604819, 51.47805285786549], [1.4892325594422005, 51.141716865286114], [1.4543878027721178, 51.039777098066935], [1.365584696686028, 50.78247664147789], [1.226359738022012, 50.72538992329061], [0.42517615083812643, 50.46349543365055], [-0.3112267334732053, 50.2227787621226], [-0.33244271495922817, 50.21587563843823], [-0.5140368264698054, 50.15651336613953], [-0.6397747410569252, 50.11543655340021], [-1.268660523042172, 49.90984993288983], [-1.4498907240344465, 49.8544898525566], [-1.6359404700468474, 49.79765530956248], [-1.903889175201698, 49.71579158366526], [-1.9623587184593418, 49.69794497202512], [-2.362388273780482, 49.575741962702], [-3.1677395026752038, 49.32970169985596], [-3.9569997143735804, 49.088568384742246], [-4.001418788856739, 49.0750252433399], [-4.241658286589654, 49.00164257207036], [-5.035258821234578, 48.759178601966326], [-5.4461836817443725, 48.63978912985816], [-6.6411434560477005, 47.31821871124797], [-7.897429868155427, 45.64814858990329], [-8.43768227557726, 44.916917203344525], [-8.96109432773892, 43.90925298425551], [-9.083923244191624, 43.673573342960104], [-9.084485852808456, 43.67271145853935], [-9.085517091164661, 43.67136102363987], [-9.440682531723667, 42.99059261429642], [-9.925119019127578, 40.779043963691706], [-9.542513886012387, 38.50611513147677], [-9.396102024440694, 37.788815252010615], [-9.205931457493875, 36.82800253918536], [-8.203281806585096, 36.59272042264578], [-7.253599959937674, 36.36206772760446], [-5.737712833124249, 35.99380587123699], [-5.358126517512034, 36.01365700646969], [-5.272643590165842, 36.01772800055238], [-4.707873783563713, 36.04446230741535], [-3.6934353345955344, 36.20057826028864], [-3.6811347632578304, 36.20247312054167], [-3.2746596733527156, 36.265008062331034], [-2.6011248911399605, 36.3686309118443], [-2.255269136820772, 36.42184093189418], [-1.6348989651293948, 36.51728544930255], [-0.37726065696119804, 36.71077505398428], [3.0934739570884346, 37.24461240891499], [7.497127180635687, 37.4448574514771], [10.140891671124535, 37.52998132582491], [10.371052694393427, 37.533989776665805], [11.003043688642208, 37.544850553710546], [11.189933951920551, 37.49754860019355], [11.845509665318872, 37.325846741264115], [12.103935873363696, 37.25815853861803], [12.11462401538131, 37.25535624835842], [12.128195467930539, 37.25179292338718], [13.28125895257594, 36.94978477989746], [15.215792234276023, 36.4430840982381], [16.740274508724355, 36.130387743620666], [17.915598710871166, 35.88927681696655], [21.420787448608962, 35.170253990187895], [23.01685174483771, 34.842723054668355], [24.946239427699254, 34.22934732412669], [25.498107216001074, 34.0538543299954], [26.325691092425302, 33.79071001365929], [27.649427787324043, 33.369826065704686], [27.948973287649636, 33.260747255163146], [28.233784309327802, 33.157006735156045], [28.926731453092373, 32.904614665116], [30.429395602915235, 32.357321954930924], [32.12736974531049, 31.73842395419759], [32.43835386623337, 31.308354608949006], [32.358965624377106, 30.945618823077734], [32.432232900390886, 30.331093043176026], [32.607595485132265, 30.227085432870616], [32.64685176575432, 29.718441977424565], [33.7933897828396, 27.923648583519338], [34.54122216868177, 27.025275768503544], [37.0413005598507, 23.624312529268824], [38.94203014478748, 20.771366552754493], [41.2419888889695, 16.32050474210827], [42.04039631544873, 15.02208725430216], [43.338695909204546, 12.72457746036738], [43.764445470273245, 12.445778861861948], [44.99613806129122, 12.044757278163406], [50.98979977156253, 13.043802283311628], [54.172437129804564, 14.073489148396863], [56.21723638902492, 14.734908795261621], [59.43125538890715, 15.68786181420526], [61.52663422302902, 16.309140663431958], [62.59449285167952, 16.594659852891564], [64.75373479241276, 17.171957185224624], [66.24522476261043, 17.57072575047421], [66.91743472239327, 17.750445387938203], [67.78370594393309, 17.955201647828506], [69.98830063059933, 18.476272994542956], [72.36678691534269, 19.032177379378297], [71.94719713067366, 20.251067535372975]], "type": "LineString"}, "properties": {"color": "red", "detail_line": "Leg 1: IND-GBR / Petroleum products / 82000 t", "is_ballast": false}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+    geo_json_6030751da865326668655b729c653e8f.bindTooltip(
+    function(layer){
+    let div = L.DomUtil.create('div');
+    
+    let handleObject = feature => {
+        if (feature === null) {
+            return '';
+        } else if (typeof(feature)=='object') {
+            return JSON.stringify(feature);
+        } else {
+            return feature;
+        }
+    }
+    let fields = ["detail_line"];
+    let aliases = ["detail_line"];
+    let table = '<table>' +
+        String(
+        fields.map(
+        (v,i)=>
+        `<tr>
+            <td>${handleObject(layer.feature.properties[v]).toLocaleString()}</td>
+        </tr>`).join(''))
+    +'</table>';
+    div.innerHTML=table;
+    
+    return div
+    }
+    ,{
+  "sticky": false,
+  "className": "foliumtooltip",
+});
+                     
+    
+            geo_json_6030751da865326668655b729c653e8f.addTo(map_0696821607249a755cc6ad930dd80734);
+        
+</script>
+</html>

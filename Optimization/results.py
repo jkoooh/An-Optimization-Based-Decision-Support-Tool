@@ -1,14 +1,4 @@
-"""Optimization results utilities
-
-This module contains helpers to read solution CSVs, build summary
-tables and render route maps. The file is organized with clear
-section headers and concise docstrings to make the intent easy
-to follow without changing any existing logic.
-
-Do not change logic here when adapting or re-using functions; the
-calling scripts rely on the exact behavior of the loaders and
-exporters.
-"""
+"""Code for reading solution files and plotting trade routes."""
 
 import math
 import pickle
@@ -16,22 +6,22 @@ import webbrowser
 from pathlib import Path
 
 import folium
-from networkx import display
 import pandas as pd
 
 from Comtrade_API_call.comtradeDataProcessing import build_comtrade_df
-from Optimization.model1N import load_commodities
 from Ports.routing import load_or_build_clusters
 
-# Display options for interactive debugging / REPL
-pd.set_option("display.max_columns", None)
-pd.set_option("display.width", 120)
-pd.set_option("display.max_colwidth", 60)
-
-# -------------------- Helpers: Countries & ISO --------------------
+def load_commodities(path_c: str, sheet: str) -> pd.DataFrame:
+    """
+    Load HS4 data from Excel and build HS code column.
+    """
+    df = pd.read_excel(path_c, sheet_name=sheet)
+    df["HS4"] = df["HS4"].astype("string")
+    return df
 
 
 def normalize_country_name(country: str) -> str:
+    """Normalize country name variants used across data sources."""
     replacements = {
         "Vietnam": "Viet Nam",
         "Hong Kong SAR": "China, Hong Kong SAR",
@@ -49,6 +39,7 @@ def normalize_country_name(country: str) -> str:
 
 
 def load_country_iso_lookup(cache_path: str = "Data/reporters_cache.pkl") -> dict[str, str]:
+    """Load country -> ISO3 mapping from cached reporter metadata."""
     cache = Path(cache_path)
     if not cache.exists():
         return {}
@@ -71,6 +62,7 @@ def load_country_iso_lookup(cache_path: str = "Data/reporters_cache.pkl") -> dic
 
 
 def country_to_iso3(country: str, country_lookup: dict[str, str]) -> str:
+    """Resolve a country name into ISO3 code with safe fallback."""
     if not country:
         return "UNK"
     country = normalize_country_name(str(country)).strip()
@@ -83,10 +75,7 @@ def country_to_iso3(country: str, country_lookup: dict[str, str]) -> str:
 
 
 def load_variables(path: str) -> tuple[pd.DataFrame, dict[int, bool], dict[int, float]]:
-    """
-    Load x (legs), c (washing), and q (cargo quantity) variables from a solution file.
-    Returns (df, washing_legs, q_by_leg).
-    """
+    """Load x/c/q variables from a solution CSV file."""
     temp = pd.read_csv(path)
     temp = temp[temp["record_type"] == "var"].copy()
 
@@ -116,8 +105,7 @@ def load_variables(path: str) -> tuple[pd.DataFrame, dict[int, bool], dict[int, 
             .str.removesuffix("]")
             .str.split(",", expand=True)
         )
-        # Model semantics: c[..., l] activates sea-cleaning on previous leg (l-1),
-        # since wash ballast time is enforced on t_S[l-1].
+        # c[..., l] marks cleaning during sea leg l-1 in the model.
         c_transition_legs = c_parts[2].astype(int)
         washing_legs = {int(leg - 1): True for leg in c_transition_legs if int(leg) > 0}
 
@@ -138,18 +126,13 @@ def load_variables(path: str) -> tuple[pd.DataFrame, dict[int, bool], dict[int, 
     return df, washing_legs, q_by_leg
 
 
-# -------------------- Solution File Loaders --------------------
-
-
 def plot_routes(
     df: pd.DataFrame,
     washing_legs: dict[int, bool],
     q_by_leg: dict[int, float],
     out_html: str = "jebsen_routes.html",
 ):
-    """
-    Plot routes on a Folium map with extended tooltip and legend (bottom left).
-    """
+    """Plot solved route legs on a Folium map with a compact legend."""
     comtrade_df = build_comtrade_df()
     clusters = load_or_build_clusters()
     cmds = load_commodities("Data/cmd_groups.xlsx", "cmdList")
@@ -197,6 +180,7 @@ def plot_routes(
             continue
 
         commodity_desc = cmd_lookup.get(hs4, "Unknown commodity")
+        # Manual commodity name overrides for cleaner map labels.
         if hs4 == "2710":
             commodity_desc = "Petroleum products"
         elif hs4 == "2709":
@@ -237,6 +221,7 @@ def plot_routes(
         export_iso = country_to_iso3(export_country, country_lookup)
         import_iso = country_to_iso3(import_country, country_lookup)
 
+        # Color and leg type selection.
         segment = segment_lookup.get(hs4, "Unknown")
         if segment == "Tanker":
             color = "red"
@@ -244,7 +229,6 @@ def plot_routes(
         elif segment == "Bulk":
             color = "blue"
             leg_type = "Bulk"
-
         elif hs4 == "7777":
             if washing_legs.get(leg, False):
                 color = "green"
@@ -285,6 +269,7 @@ def plot_routes(
     )
 
     def offset_coords(coords, offset_m):
+        """Offset route geometry slightly so overlapping lines are visible."""
         if not coords or abs(offset_m) < 1e-6:
             return coords
         out = []
@@ -308,12 +293,11 @@ def plot_routes(
         return out
 
     def wrap_lon(lon):
+        """Wrap longitude to [-180, 180)."""
         return ((lon + 180.0) % 360.0) - 180.0
 
     def split_on_dateline(coords):
-        """
-        Split a lon/lat LineString into segments when crossing +/-180 deg longitude.
-        """
+        """Split polyline when crossing the international dateline."""
         if len(coords) < 2:
             return [coords] if coords else []
 
@@ -351,7 +335,6 @@ def plot_routes(
             current.append([cross_lon, lat_cross])
             if len(current) >= 2:
                 segments.append(current)
-
             current = [[next_lon, lat_cross], [lon2, lat2]]
 
         if len(current) >= 2:
@@ -359,6 +342,7 @@ def plot_routes(
 
         return segments
 
+    # Draw all route segments with small offsets and legend entries.
     total_routes = len(routes)
     step_m = 10000.0
     max_offset_m = 20000.0
@@ -450,174 +434,9 @@ def plot_routes(
     webbrowser.open(out_html)
 
 
-# -------------------- Visualization / Plotting --------------------
-
-
-def build_rolling120_case_table(
-    base_dir: str = "Optimization/Solutions/Jebsen/rolling120",
-    dwt: float = 82000.0,
-) -> pd.DataFrame:
-    """
-    Build one summary row per case folder in rolling120.
-
-    Each row aggregates all `solution_*_iter*.csv` files in the folder.
-    """
-    rows: list[dict[str, int | str]] = []
-    base_path = Path(base_dir)
-
-    def case_sort_key(case_name: str) -> tuple[str, int]:
-        parts = case_name.rsplit("_", 1)
-        if len(parts) == 2 and parts[1] in {"A", "B", "C"}:
-            stem, suffix = parts
-        else:
-            stem, suffix = case_name, ""
-        suffix_order = {"": 0, "C": 1, "B": 2, "A": 3}
-        return stem, suffix_order.get(suffix, 9)
-
-    case_dirs = [p for p in base_path.iterdir() if p.is_dir()]
-    for case_dir in sorted(case_dirs, key=lambda p: case_sort_key(p.name)):
-        if not case_dir.is_dir():
-            continue
-
-        iter_files = sorted(case_dir.glob("solution_*_iter*.csv"))
-        if not iter_files:
-            continue
-
-        case_frames = [pd.read_csv(file) for file in iter_files]
-        case_df = pd.concat(case_frames, ignore_index=True)
-        var_df = case_df[case_df["record_type"] == "var"].copy()
-        var_df["value_num"] = pd.to_numeric(var_df["value"], errors="coerce")
-
-        x_df = var_df[var_df["name"].str.startswith("x[")].copy()
-        x_df = x_df[x_df["value_num"] > 0.5]
-        x_df["commodity"] = x_df["name"].str.extract(r"^x\[[^,]+,[^,]+,[^,]+,([^\]]+)\]$")
-        x_df["route_nm_num"] = pd.to_numeric(x_df["route_nm"], errors="coerce").fillna(0.0)
-
-        distance_laden = x_df.loc[x_df["commodity"] != "7777", "route_nm_num"].sum()
-        distance_ballast = x_df.loc[x_df["commodity"] == "7777", "route_nm_num"].sum()
-
-        sailing_time = var_df.loc[var_df["name"].str.startswith("t_S["), "value_num"].sum()
-        q_values = var_df.loc[var_df["name"].str.startswith("q["), "value_num"]
-        tonnes_avg = q_values.mean() if not q_values.empty else 0.0
-        capacity_utilization = (tonnes_avg / dwt * 100.0) if dwt > 0 else 0.0
-        objective_values = pd.to_numeric(
-            case_df.loc[
-                (case_df["record_type"] == "objective") & (case_df["name"] == "objective"),
-                "value",
-            ],
-            errors="coerce",
-        )
-        objective_sum = objective_values.sum()
-
-        rows.append(
-            {
-                "Case": case_dir.name,
-                "Sailing time": int(round(float(sailing_time), 0)),
-                "Distance laden": int(round(float(distance_laden), 0)),
-                "Distance Ballast": int(round(float(distance_ballast), 0)),
-                "Tonnes avg": int(round(float(tonnes_avg), 0)),
-                "Capacity utilization": int(round(float(capacity_utilization), 0)),
-                "Objective function": int(round(float(objective_sum), 0)),
-            }
-        )
-
-    return pd.DataFrame(rows)
-
-
-# -------------------- Rolling120 Summary Builders --------------------
-
-
-def export_rolling120_case_table(
-    output_csv: str = "Optimization/Solutions/Jebsen/rolling120/rolling120_case_table.csv",
-) -> pd.DataFrame:
-    """
-    Build and store the rolling120 summary table as CSV.
-    """
-    table = build_rolling120_case_table()
-    table.to_csv(output_csv, index=False)
-    return table
-
-
-def export_rolling120_case_table_latex(
-    output_tex: str = "Optimization/Solutions/Jebsen/rolling120/rolling120_case_table.tex",
-    caption: str = "Jebsen rolling120 summary table",
-    label: str = "tab:jebsen_rolling120_summary",
-) -> str:
-    """
-    Export rolling120 summary table to LaTeX longtable in thesis style.
-    """
-    table = build_rolling120_case_table()
-
-    lines = [
-        "{\\footnotesize \\setstretch{1.0}",
-        "\\begin{longtable}{C{2.0cm} C{2.0cm} C{2.4cm} C{2.4cm} C{1.8cm} C{2.6cm} C{2.8cm}}",
-        f"\\caption{{{caption}}}",
-        f"\\label{{{label}}} \\\\",
-        "",
-        "\\toprule",
-        "Case&Sailing time&Distance laden&Distance Ballast&Tonnes avg&Capacity utilization&Objective function\\\\",
-        "\\midrule",
-        "\\endfirsthead",
-        "",
-        "\\toprule",
-        "Case&Sailing time&Distance laden&Distance Ballast&Tonnes avg&Capacity utilization&Objective function\\\\",
-        "\\midrule",
-        "\\endhead",
-        "",
-        "\\midrule",
-        "\\multicolumn{7}{r}{\\emph{Continued on next page}} \\\\",
-        "\\endfoot",
-        "",
-        "\\bottomrule",
-        "\\endlastfoot",
-        "",
-    ]
-
-    for row in table.itertuples(index=False):
-        lines.append(
-            f"{row[0]} & {row[1]} & {row[2]} & {row[3]} & {row[4]} & {row[5]}\\% & {row[6]} \\\\"
-        )
-
-    lines.extend(["", "\\end{longtable}", "}"])
-    latex_text = "\n".join(lines)
-
-    output_path = Path(output_tex)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(latex_text, encoding="utf-8")
-    return latex_text
-
-
 if __name__ == "__main__":
-    """
-    Convenient runner for interactive use.
-
-    This runner attempts to call `Optimization.Solutions.run()` if the
-    `Solutions` module is available. It does not hard-code solution
-    filenames so it is safe to leave in the repository. No logic in the
-    module is changed by this runner.
-
-    How to use with files produced by `model_finished.py`:
-    - Place the resulting solution CSVs under a folder pattern such as
-      `Optimization/Solutions/<CaseName>/solution_*.csv`.
-    - If you want to visualize a single solution manually, call:
-
-        df, washing_legs, q_by_leg = load_variables('path/to/solution.csv')
-        plot_routes(df, washing_legs, q_by_leg, out_html='jebsen_routes.html')
-
-    The automated runner below will only run if `Optimization.Solutions`
-    can be imported and exposes a `run()` function.
-    """
-
-    try:
-        from Optimization import Solutions  # optional integration point
-
-        if hasattr(Solutions, "run"):
-            Solutions.run()
-        else:
-            print("Imported Optimization.Solutions but no `run()` found.")
-    except Exception as exc:  # pragma: no cover - optional runtime
-        print("Could not run Optimization.Solutions.run():", exc)
-        print(
-            "To visualize a single solution produced by `model_finished.py`,"
-            " call `load_variables(path)` and `plot_routes(...)` as described above."
-        )
+    """Example runner for one precomputed solution file."""
+    df, washing_legs, q_by_leg = load_variables(
+        "Optimization/Solutions/solution_5_iter001.csv"
+    )
+    plot_routes(df, washing_legs, q_by_leg, out_html="routes_iter001.html")
